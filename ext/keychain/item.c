@@ -182,7 +182,8 @@ static VALUE keychain_item_inspect(VALUE self)
 	return str;
 }
 
-static VALUE keychain_item_to_json(VALUE self)
+
+static VALUE keychain_item_to_hash(VALUE self)
 {
 	VALUE hash = rb_hash_new();
 
@@ -205,7 +206,17 @@ static VALUE keychain_item_to_json(VALUE self)
 
 	rb_hash_aset(hash, rb_str_new2("password"), keychain_item_password(self));
 
-	return rb_funcall(hash, rb_intern("to_json"), 0);
+	return hash;
+}
+
+static VALUE keychain_item_to_json(VALUE self)
+{
+	return rb_funcall(keychain_item_to_hash(self), rb_intern("to_json"), 0);
+}
+
+static VALUE keychain_item_to_yaml(VALUE self)
+{
+	return rb_funcall(keychain_item_to_hash(self), rb_intern("to_yaml"), 0);
 }
 
 
@@ -245,4 +256,5 @@ void Init_keychain_item()
 
 	rb_define_method(cKeychainItem, "inspect", keychain_item_inspect, 0);
 	rb_define_method(cKeychainItem, "to_json", keychain_item_to_json, 0);
+	rb_define_method(cKeychainItem, "to_yaml", keychain_item_to_yaml, 0);
 }

@@ -1,6 +1,8 @@
 require 'test/unit'
 require 'keychain'
+
 require 'json'
+require 'yaml'
 
 class TestKeychain < Test::Unit::TestCase
   def test_internet_password
@@ -24,6 +26,7 @@ class TestKeychain < Test::Unit::TestCase
     assert_equal 'secret', item.password
 
     assert item.to_json
+    assert item.to_yaml
 
     item = Keychain.find_internet_password('example.org', '', 'josh', '')
     assert item
@@ -50,6 +53,7 @@ class TestKeychain < Test::Unit::TestCase
     assert_equal 'password', item.password
 
     assert item.to_json
+    assert item.to_yaml
 
     item = Keychain.find_generic_password('', 'linksys')
     assert item
