@@ -18,6 +18,17 @@ static VALUE keychain_item_alloc(VALUE klass)
 	return Data_Make_Struct(klass, struct KeychainItem, keychain_item_mark, keychain_item_free, keychain_item);
 }
 
+
+static VALUE keychain_item_delete(VALUE self)
+{
+	SecKeychainItemRef *itemRef = KEYCHAIN_ITEM(self)->itemRef;
+	SecKeychainItemDelete(itemRef);
+	CFRelease(itemRef);
+	KEYCHAIN_ITEM(self)->itemRef = NULL;
+	return Qnil;
+}
+
+
 static VALUE keychain_item_get_attribute(VALUE self, SecItemAttr attr)
 {
 	SecKeychainItemRef *itemRef = KEYCHAIN_ITEM(self)->itemRef;
@@ -200,6 +211,8 @@ void Init_keychain_item()
 	cKeychainItem = rb_define_class_under(mKeychain, "Item", rb_cObject);
 
 	rb_define_alloc_func(cKeychainItem, keychain_item_alloc);
+
+	rb_define_method(cKeychainItem, "delete", keychain_item_delete, 0);
 
 	rb_define_method(cKeychainItem, "creation_date", keychain_item_creation_date, 0);
 	rb_define_method(cKeychainItem, "modified_date", keychain_item_modified_date, 0);

@@ -160,6 +160,47 @@ void keychain_raise_error(OSStatus status)
 }
 
 
+static VALUE keychain_add_internet_password(VALUE self, VALUE serverNameStr, VALUE securityDomainStr, VALUE accountNameStr, VALUE pathStr, VALUE passwordStr)
+{
+	OSStatus error;
+
+	SecKeychainRef keychain = NULL;
+
+	char *serverName     = StringValueCStr(serverNameStr);
+	char *securityDomain = StringValueCStr(securityDomainStr);
+	char *accountName    = StringValueCStr(accountNameStr);
+	char *path           = StringValueCStr(pathStr);
+
+	UInt16 port = 0;
+
+	SecProtocolType protocol                 = kSecProtocolTypeAny;
+	SecAuthenticationType authenticationType = kSecProtocolTypeAny;
+
+	char *password = StringValueCStr(passwordStr);
+
+	SecKeychainItemRef *itemRef;
+
+	error = SecKeychainAddInternetPassword(
+		keychain,
+		strlen(serverName), serverName,
+		strlen(securityDomain), securityDomain,
+		strlen(accountName), accountName,
+		strlen(path), path,
+		port,
+		protocol,
+		protocol,
+		strlen(password), password,
+		&itemRef
+	);
+
+	if (error) keychain_raise_error(error);
+
+	VALUE new_keychain_item = rb_obj_alloc(cKeychainItem);
+	KEYCHAIN_ITEM(new_keychain_item)->itemRef = itemRef;
+
+	return new_keychain_item;
+}
+
 static VALUE keychain_find_internet_password(VALUE self, VALUE serverNameStr, VALUE securityDomainStr, VALUE accountNameStr, VALUE pathStr)
 {
 	OSStatus error;
@@ -188,6 +229,34 @@ static VALUE keychain_find_internet_password(VALUE self, VALUE serverNameStr, VA
 		protocol,
 		authenticationType,
 		0, NULL,
+		&itemRef
+	);
+
+	if (error) keychain_raise_error(error);
+
+	VALUE new_keychain_item = rb_obj_alloc(cKeychainItem);
+	KEYCHAIN_ITEM(new_keychain_item)->itemRef = itemRef;
+
+	return new_keychain_item;
+}
+
+static VALUE keychain_add_generic_password(VALUE self, VALUE serverNameStr, VALUE accountNameStr, VALUE passwordStr)
+{
+	OSStatus error;
+
+	SecKeychainRef keychain = NULL;
+
+	char *serverName  = StringValueCStr(serverNameStr);
+	char *accountName = StringValueCStr(accountNameStr);
+	char *password    = StringValueCStr(passwordStr);
+
+	SecKeychainItemRef *itemRef;
+
+	error = SecKeychainAddGenericPassword(
+		keychain,
+		strlen(serverName), serverName,
+		strlen(accountName), accountName,
+		strlen(password), password,
 		&itemRef
 	);
 
@@ -276,7 +345,9 @@ void Init_keychain()
 	mKeychain = rb_define_module("Keychain");
 	eKeychainError = rb_define_class_under(mKeychain, "Error", rb_eStandardError);
 
+	rb_define_module_function(mKeychain, "add_internet_password", keychain_add_internet_password, 5);
 	rb_define_module_function(mKeychain, "find_internet_password", keychain_find_internet_password, 4);
+	rb_define_module_function(mKeychain, "add_generic_password", keychain_add_generic_password, 3);
 	rb_define_module_function(mKeychain, "find_generic_password", keychain_find_generic_password, 2);
 
 	rb_define_module_function(mKeychain, "internet_password_items", keychain_internet_password_items, 0);
