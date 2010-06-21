@@ -1,0 +1,11 @@
+= Ruby Keychain Services
+
+Ruby bindings for OS X Keychain Services API
+
+=== Usage
+
+  require 'keychain'
+
+  item = Keychain.items.find { |item| item.label =~ /twitter/ }
+  item.account  # => "joshpeek"
+  item.password # => "secret"
