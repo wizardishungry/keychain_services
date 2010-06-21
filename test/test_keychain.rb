@@ -17,10 +17,10 @@ class TestKeychain < Test::Unit::TestCase
     assert_equal 'example.org', item.label
     assert_equal 'josh', item.account
     assert_equal 'example.org', item.server
-    # assert_equal nil, item.authentication_type
+    assert_equal nil, item.authentication_type
     assert_equal 0, item.port
     assert_equal '', item.path
-    # assert_equal nil, item.protocol
+    assert_equal nil, item.protocol
     assert_equal 'secret', item.password
 
     assert item.to_json

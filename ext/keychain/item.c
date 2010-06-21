@@ -1,6 +1,7 @@
 #include "keychain.h"
 
 VALUE cKeychainItem;
+VALUE NullCodeStr;
 
 static void keychain_item_free(struct KeychainItem *item)
 {
@@ -125,7 +126,11 @@ static VALUE keychain_item_server(VALUE self)
 
 static VALUE keychain_item_authentication_type(VALUE self)
 {
-	return keychain_item_get_attribute(self, kSecAuthenticationTypeItemAttr);
+	VALUE charcode = keychain_item_get_attribute(self, kSecAuthenticationTypeItemAttr);
+	if (rb_funcall(charcode, rb_intern("eql?"), 1, NullCodeStr) == Qtrue)
+		return Qnil;
+	else
+		return charcode;
 }
 
 static VALUE keychain_item_port(VALUE self)
@@ -144,7 +149,9 @@ static VALUE keychain_item_protocol(VALUE self)
 {
 	VALUE bigendian_str = keychain_item_get_attribute(self, kSecProtocolItemAttr);
 
-	if (bigendian_str == Qnil)
+	if (rb_funcall(bigendian_str, rb_intern("eql?"), 1, NullCodeStr) == Qtrue)
+		return Qnil;
+	else if (bigendian_str == Qnil)
 		return Qnil;
 	else
 		return rb_funcall(bigendian_str, rb_intern("reverse"), 0);
@@ -213,6 +220,9 @@ void Init_keychain_item()
 	rb_define_alloc_func(cKeychainItem, keychain_item_alloc);
 
 	rb_define_method(cKeychainItem, "delete", keychain_item_delete, 0);
+
+	char null[] = {0, 0, 0, 0};
+	NullCodeStr = rb_str_new(null, 4);
 
 	rb_define_method(cKeychainItem, "creation_date", keychain_item_creation_date, 0);
 	rb_define_method(cKeychainItem, "modified_date", keychain_item_modified_date, 0);
