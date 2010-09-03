@@ -26,19 +26,19 @@ struct KeychainItem {
 #define KEYCHAIN_UTF8_STR_NEW2(str)   rb_enc_str_new((str), strlen((str)), rb_utf8_encoding())
 #define KEYCHAIN_BINARY_STR_NEW2(str) rb_enc_str_new((str), strlen((str)), rb_ascii8bit_encoding())
 
-#define KEYCHAIN_FORCE_ASCII_ENCODING(str) \
+#define KEYCHAIN_SET_ASCII_ENCODING(str) \
 	do { \
 		if ((str) != Qnil) { \
 			ENCODING_SET((str), rb_usascii_encindex()); \
 		} \
 	} while (0)
-#define KEYCHAIN_FORCE_UTF8_ENCODING(str) \
+#define KEYCHAIN_SET_UTF8_ENCODING(str) \
 	do { \
 		if ((str) != Qnil) { \
 			ENCODING_SET((str), rb_utf8_encindex()); \
 		} \
 	} while (0)
-#define KEYCHAIN_FORCE_BINARY_ENCODING(str) \
+#define KEYCHAIN_SET_BINARY_ENCODING(str) \
 do { \
 	if ((str) != Qnil) { \
 		ENCODING_SET((str), rb_ascii8bit_encindex()); \
@@ -54,5 +54,9 @@ do { \
 #define KEYCHAIN_ASCII_STR_NEW2(str)  rb_str_new2((str))
 #define KEYCHAIN_UTF8_STR_NEW2(str)   rb_str_new((str), strlen((s)))
 #define KEYCHAIN_BINARY_STR_NEW2(str) rb_str_new((str), strlen((s)))
+
+#define KEYCHAIN_SET_ASCII_ENCODING(str) /* empty */
+#define KEYCHAIN_SET_UTF8_ENCODING(str) /* empty */
+#define KEYCHAIN_SET_BINARY_ENCODING(str) /* empty */
 
 #endif

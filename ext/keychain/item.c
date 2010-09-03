@@ -71,66 +71,90 @@ static VALUE keychain_item_modified_date(VALUE self)
 
 static VALUE keychain_item_kind(VALUE self)
 {
-	return keychain_item_get_attribute(self, kSecDescriptionItemAttr);
+	VALUE str = keychain_item_get_attribute(self, kSecDescriptionItemAttr);
+	KEYCHAIN_SET_UTF8_ENCODING(str);
+	return str;
 }
 
 static VALUE keychain_item_comment(VALUE self)
 {
-	return keychain_item_get_attribute(self, kSecCommentItemAttr);
+	VALUE str = keychain_item_get_attribute(self, kSecCommentItemAttr);
+	KEYCHAIN_SET_UTF8_ENCODING(str);
+	return str;
 }
+
 
 static VALUE keychain_item_creator(VALUE self)
 {
-	return keychain_item_get_attribute(self, kSecCreatorItemAttr);
+	VALUE str = keychain_item_get_attribute(self, kSecCreatorItemAttr);
+	KEYCHAIN_SET_BINARY_ENCODING(str);
+	return str;
 }
 
 static VALUE keychain_item_type(VALUE self)
 {
 	VALUE bigendian_str = keychain_item_get_attribute(self, kSecTypeItemAttr);
 
-	if (bigendian_str == Qnil)
+	if (bigendian_str == Qnil) {
 		return Qnil;
-	else
+	} else {
+		KEYCHAIN_SET_BINARY_ENCODING(bigendian_str);
 		return rb_funcall(bigendian_str, rb_intern("reverse"), 0);
+	}
 }
 
 static VALUE keychain_item_label(VALUE self)
 {
-	return keychain_item_get_attribute(self, kSecLabelItemAttr);
+	VALUE str = keychain_item_get_attribute(self, kSecLabelItemAttr);
+	KEYCHAIN_SET_UTF8_ENCODING(str);
+	return str;
 }
 
 static VALUE keychain_item_account(VALUE self)
 {
-	return keychain_item_get_attribute(self, kSecAccountItemAttr);
+	VALUE str = keychain_item_get_attribute(self, kSecAccountItemAttr);
+	KEYCHAIN_SET_UTF8_ENCODING(str);
+	return str;
 }
 
 static VALUE keychain_item_service(VALUE self)
 {
-	return keychain_item_get_attribute(self, kSecServiceItemAttr);
+	VALUE str = keychain_item_get_attribute(self, kSecServiceItemAttr);
+	KEYCHAIN_SET_UTF8_ENCODING(str);
+	return str;
 }
 
 static VALUE keychain_item_value(VALUE self)
 {
-	return keychain_item_get_attribute(self, kSecGenericItemAttr);
+	VALUE str = keychain_item_get_attribute(self, kSecGenericItemAttr);
+	KEYCHAIN_SET_BINARY_ENCODING(str);
+	return str;
 }
 
 static VALUE keychain_item_security_domain(VALUE self)
 {
-	return keychain_item_get_attribute(self, kSecSecurityDomainItemAttr);
+	VALUE str = keychain_item_get_attribute(self, kSecSecurityDomainItemAttr);
+	KEYCHAIN_SET_UTF8_ENCODING(str);
+	return str;
 }
 
 static VALUE keychain_item_server(VALUE self)
 {
-	return keychain_item_get_attribute(self, kSecServerItemAttr);
+	VALUE str = keychain_item_get_attribute(self, kSecServerItemAttr);
+	KEYCHAIN_SET_UTF8_ENCODING(str);
+	return str;
 }
+
 
 static VALUE keychain_item_authentication_type(VALUE self)
 {
 	VALUE charcode = keychain_item_get_attribute(self, kSecAuthenticationTypeItemAttr);
-	if (rb_funcall(charcode, rb_intern("eql?"), 1, NullCodeStr) == Qtrue)
+	if (rb_funcall(charcode, rb_intern("eql?"), 1, NullCodeStr) == Qtrue) {
 		return Qnil;
-	else
+	} else {
+		KEYCHAIN_SET_BINARY_ENCODING(charcode);
 		return charcode;
+	}
 }
 
 static VALUE keychain_item_port(VALUE self)
@@ -142,21 +166,24 @@ static VALUE keychain_item_port(VALUE self)
 
 static VALUE keychain_item_path(VALUE self)
 {
-	return keychain_item_get_attribute(self, kSecPathItemAttr);
+	VALUE str = keychain_item_get_attribute(self, kSecPathItemAttr);
+	KEYCHAIN_SET_UTF8_ENCODING(str);
+	return str;
 }
 
 static VALUE keychain_item_protocol(VALUE self)
 {
 	VALUE bigendian_str = keychain_item_get_attribute(self, kSecProtocolItemAttr);
 
-	if (rb_funcall(bigendian_str, rb_intern("eql?"), 1, NullCodeStr) == Qtrue)
+	if (rb_funcall(bigendian_str, rb_intern("eql?"), 1, NullCodeStr) == Qtrue) {
 		return Qnil;
-	else if (bigendian_str == Qnil)
+	} else if (bigendian_str == Qnil) {
 		return Qnil;
-	else
+	} else {
+		KEYCHAIN_SET_BINARY_ENCODING(bigendian_str);
 		return rb_funcall(bigendian_str, rb_intern("reverse"), 0);
+	}
 }
-
 
 static VALUE keychain_item_password(VALUE self)
 {
@@ -170,15 +197,15 @@ static VALUE keychain_item_password(VALUE self)
 
 	VALUE result = rb_str_new(passwordData, passwordLength);
 	SecKeychainItemFreeContent(NULL, passwordData);
-
+	KEYCHAIN_SET_BINARY_ENCODING(result);
 	return result;
 }
 
 static VALUE keychain_item_inspect(VALUE self)
 {
-	VALUE str = rb_str_new2("#<Keychain::Item \"");
-	rb_str_append(str, keychain_item_label(self));
-	rb_str_append(str, rb_str_new2("\">"));
+	VALUE str = KEYCHAIN_ASCII_STR_NEW2("#<Keychain::Item \"");
+	rb_str_append(str, keychain_item_label(self)); /* ASCII + UTF-8 (compatible) */
+	rb_str_append(str, KEYCHAIN_ASCII_STR_NEW2("\">"));
 	return str;
 }
 
@@ -187,24 +214,24 @@ static VALUE keychain_item_to_hash(VALUE self)
 {
 	VALUE hash = rb_hash_new();
 
-	rb_hash_aset(hash, rb_str_new2("creation_date"), keychain_item_creation_date(self));
-	rb_hash_aset(hash, rb_str_new2("modified_date"), keychain_item_modified_date(self));
-	rb_hash_aset(hash, rb_str_new2("kind"), keychain_item_kind(self));
-	rb_hash_aset(hash, rb_str_new2("comment"), keychain_item_comment(self));
-	rb_hash_aset(hash, rb_str_new2("creator"), keychain_item_creator(self));
-	rb_hash_aset(hash, rb_str_new2("type"), keychain_item_type(self));
-	rb_hash_aset(hash, rb_str_new2("label"), keychain_item_label(self));
-	rb_hash_aset(hash, rb_str_new2("account"), keychain_item_account(self));
-	rb_hash_aset(hash, rb_str_new2("service"), keychain_item_service(self));
-	rb_hash_aset(hash, rb_str_new2("value"), keychain_item_value(self));
-	rb_hash_aset(hash, rb_str_new2("security_domain"), keychain_item_security_domain(self));
-	rb_hash_aset(hash, rb_str_new2("server"), keychain_item_server(self));
-	rb_hash_aset(hash, rb_str_new2("authentication_type"), keychain_item_authentication_type(self));
-	rb_hash_aset(hash, rb_str_new2("port"), keychain_item_port(self));
-	rb_hash_aset(hash, rb_str_new2("path"), keychain_item_path(self));
-	rb_hash_aset(hash, rb_str_new2("protocol"), keychain_item_protocol(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("creation_date"), keychain_item_creation_date(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("modified_date"), keychain_item_modified_date(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("kind"), keychain_item_kind(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("comment"), keychain_item_comment(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("creator"), keychain_item_creator(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("type"), keychain_item_type(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("label"), keychain_item_label(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("account"), keychain_item_account(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("service"), keychain_item_service(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("value"), keychain_item_value(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("security_domain"), keychain_item_security_domain(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("server"), keychain_item_server(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("authentication_type"), keychain_item_authentication_type(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("port"), keychain_item_port(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("path"), keychain_item_path(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("protocol"), keychain_item_protocol(self));
 
-	rb_hash_aset(hash, rb_str_new2("password"), keychain_item_password(self));
+	rb_hash_aset(hash, KEYCHAIN_ASCII_STR_NEW2("password"), keychain_item_password(self));
 
 	return hash;
 }
