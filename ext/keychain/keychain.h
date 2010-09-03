@@ -52,8 +52,8 @@ do { \
 #define KEYCHAIN_BINARY_STR_NEW(str, len) rb_str_new((str), (len))
 
 #define KEYCHAIN_ASCII_STR_NEW2(str)  rb_str_new2((str))
-#define KEYCHAIN_UTF8_STR_NEW2(str)   rb_str_new((str), strlen((s)))
-#define KEYCHAIN_BINARY_STR_NEW2(str) rb_str_new((str), strlen((s)))
+#define KEYCHAIN_UTF8_STR_NEW2(str)   rb_str_new((str), strlen((str)))
+#define KEYCHAIN_BINARY_STR_NEW2(str) rb_str_new((str), strlen((str)))
 
 #define KEYCHAIN_SET_ASCII_ENCODING(str) /* empty */
 #define KEYCHAIN_SET_UTF8_ENCODING(str) /* empty */
