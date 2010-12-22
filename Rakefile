@@ -3,7 +3,8 @@ spec = Gem::Specification.new do |s|
   s.name = 'keychain_services'
   s.version = '0.1.0'
   s.summary = 'Ruby bindings for OS X Keychain Services API'
-  s.platform = Gem::Platform::RUBY
+  s.platform = Gem::Platform::CURRENT
+  s.files = FileList['ext/keychain/*']
   s.extensions = FileList["ext/keychain/extconf.rb"]
 end
 
